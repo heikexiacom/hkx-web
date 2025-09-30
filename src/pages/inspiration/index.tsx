@@ -34,7 +34,6 @@ const renderMarkdown = (content: string) => {
                     <Image
                       src={props.src}
                       className="max-w-200px max-h-200px  "
-                      placeholder="图片加载中..."
                     />
                   </div>
                 </div>
@@ -49,7 +48,7 @@ const renderMarkdown = (content: string) => {
   );
 };
 
-const renderMarkdownRender = (content: string) => {
+const renderMarkdownTyping = (content: string) => {
   return (
     <Typography>
       <div className="chat-content">
@@ -59,10 +58,11 @@ const renderMarkdownRender = (content: string) => {
               return <div {...props} />;
             },
             img: ({ node, ...props }) => {
+              const title = props.alt || "图片加载中";
               return (
                 <div className="py-2">
-                  <div className="rounded-lg overflow-hidden line-height-0 h-200px w-200px">
-                    图片加载中
+                  <div className="rounded-lg bg-gray-200 overflow-hidden h-200px w-200px flex items-center justify-center">
+                    <div>{title}</div>
                   </div>
                 </div>
               );
@@ -100,7 +100,6 @@ function Chat(props: { defaultItems?: chatItem[]; conversationId?: string }) {
     }
   }, [defaultItems]);
 
-  console.log("cozeChat.Render");
   useEffect(() => {
     if (cozeChat.data.answer && currentAnswerId) {
       const { answer, chatid } = cozeChat.data;
@@ -114,8 +113,6 @@ function Chat(props: { defaultItems?: chatItem[]; conversationId?: string }) {
       });
     }
   }, [cozeChat.data, currentAnswerId]);
-
-  const isInAnswerProgress = cozeChat.loading || typing;
 
   const submitQuestion = (q: string) => {
     const question = q.trim();
@@ -136,6 +133,8 @@ function Chat(props: { defaultItems?: chatItem[]; conversationId?: string }) {
     setValue("");
     setTyping(true);
   };
+
+  const isInAnswerProgress = cozeChat.loading || typing;
 
   return (
     <div className="w-full h-full relative ">
@@ -180,18 +179,17 @@ function Chat(props: { defaultItems?: chatItem[]; conversationId?: string }) {
                 />
               );
             }
-            const content = isInProgress ? cozeChat.data.think : item.content;
             return (
               <Bubble
                 key={item.id}
-                typing={isInProgress}
+                typing
                 role={item.role}
-                loading={!Boolean(content)}
+                loading={!Boolean(cozeChat.data.think)}
                 onTypingComplete={() => {
                   setTyping(false);
                 }}
-                content={content}
-                messageRender={renderMarkdownRender}
+                content={cozeChat.data.think}
+                messageRender={renderMarkdownTyping}
                 placement={item.role === "user" ? "end" : "start"}
                 avatar={{
                   icon:
@@ -208,6 +206,7 @@ function Chat(props: { defaultItems?: chatItem[]; conversationId?: string }) {
       </div>
       <Sender
         className=" absolute bottom-0 w-full"
+        autoSize={{ minRows: 3, maxRows: 6 }}
         value={value}
         loading={isInAnswerProgress}
         onChange={setValue}
@@ -218,6 +217,10 @@ function Chat(props: { defaultItems?: chatItem[]; conversationId?: string }) {
 }
 
 export default function index() {
+  const currentConversation = useRequest(conversationMessageList, {
+    manual: true,
+  });
+
   const data = useInfiniteScroll<{
     list: ConversationItem[];
     pageSize: number;
@@ -251,14 +254,32 @@ export default function index() {
     }
   );
 
-  const currentConversation = useRequest(conversationMessageList, {
+  const createNewConversation = useRequest(conversationCreate, {
     manual: true,
+    onSuccess: (res) => {
+      data.reload();
+      currentConversation.run({
+        conversationId: res.id,
+      });
+    },
+    throttleWait: 1000,
   });
+
   const conversationId = currentConversation.params[0]?.conversationId;
+
+  useEffect(() => {
+    if (!conversationId) {
+      if (data.data?.list?.length) {
+        currentConversation.run({
+          conversationId: data.data?.list[0].sessionId,
+        });
+      }
+    }
+  }, [conversationId, data]);
 
   return (
     <Layout className="w-full h-full">
-      <Layout.Sider>
+      <Layout.Sider width={300}>
         <InfiniteScroll
           dataLength={data.data?.list?.length ?? 0}
           next={data.loadMore}
@@ -276,18 +297,19 @@ export default function index() {
             <Button
               type="primary"
               block
-              onClick={() => {
-                conversationCreate().then(() => {
-                  data.reload();
-                });
-              }}
+              onClick={createNewConversation.refresh}
+              loading={createNewConversation.loading}
             >
               新建对话
             </Button>
             {data.data?.list.map((e) => {
+              const selected = e.sessionId === conversationId;
+
               return (
                 <div
-                  className="flex flex-row items-center gap-2 cursor-pointer"
+                  className={`flex flex-row items-center gap-2 cursor-pointer p-2 rounded-md ${
+                    selected ? "bg-gray-200" : ""
+                  }`}
                   key={e.id}
                   onClick={() => {
                     currentConversation.run({
