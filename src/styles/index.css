@@ -1,0 +1,33 @@
+/* Main Styles File */
+
+/* Import Normalize and Reset */
+@import './normalize.css';
+
+/* Import Theme Variables and Styles */
+@import './theme.css';
+
+/* App Specific Styles */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+}
+
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.keyframes-spin-1s {
+  animation: spin 1s linear infinite;
+ 
+}
+
+.user-select-none {
+  user-select: none;
+}
