@@ -348,3 +348,22 @@ template {
 [hidden] {
   display: none;
 }
+
+
+
+/* 更简约的滚动条 */
+::-webkit-scrollbar {
+    width: 6px; /* 滚动条宽度 */
+    height: 6px; /* 滚动条高度 */
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+    background-color: #ccc; /* 滑块颜色 */
+    border-radius: 3px; /* 滑块圆角 */
+}
+
+/* 滚动条轨道 */
+::-webkit-scrollbar-track {
+    background: transparent; /* 轨道背景透明 */
+}

@@ -1,11 +1,85 @@
-
-.chat-content{
-   h3{
+.chat-content {
+  h3 {
     font-size: 1.2rem !important;
     margin-top: 0.5rem !important;
     margin-bottom: 0.5rem !important;
-   }
-   ul{
+  }
+  ul {
     margin-bottom: 0.5rem !important;
-   }
+  }
+}
+
+.inspiration-page {
+  .chat-container {
+    .infinite-scroll-component__outerdiv {
+      height: calc(100% - 150px);
+    }
+    .ant-sender-content{
+      align-items: flex-start;
+    }
+
+    .ant-prompts-item {
+      animation: slideInLeft 0.5s ease-out forwards;
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    .ant-prompts-item:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    .ant-prompts-item:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .ant-prompts-item:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    // 定义从右向左的动画（user角色）
+    @keyframes slideInFromRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    // 定义从左向右的动画（assistant角色）
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    // 应用动画的类
+    .slide-in-right {
+      animation: slideInFromRight 0.5s ease-out forwards;
+    }
+    
+    .slide-in-left {
+      animation: slideInFromLeft 0.5s ease-out forwards;
+    }
+    
+    // 确保新添加的消息总是有动画
+    .chat-bubble {
+      opacity: 0; // 初始状态为不可见
+    }
+  }
 }

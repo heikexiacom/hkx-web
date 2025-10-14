@@ -1,5 +1,4 @@
 import { LoadingFour } from "@icon-park/react";
-import React from "react";
 
 export default function Loading() {
   return (

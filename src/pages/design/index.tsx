@@ -6,16 +6,15 @@ import {
 } from "@/api/design";
 import { imageOssProcess } from "@/utils/oss";
 import { usePagination } from "ahooks";
-import { App, Button, Card, Dropdown, Input, Pagination, Space } from "antd";
+import { App, Button, Input, Pagination, Space } from "antd";
 import React from "react";
 import "./index.scss";
-import { Copy, Delete, Send, Share, ShareTwo, Write } from "@icon-park/react";
+import { Copy, Delete, Send, ShareTwo, Write } from "@icon-park/react";
 import useShareModal from "./components/share";
 import useEditModal from "./components/edit";
 import usePushModal from "./components/push";
 import ImageCard from "@/components/card/imageCard";
 import { openDesign } from "@/utils/open";
-import { URL } from "url";
 import { getMapName } from "@/utils";
 
 function DesignCard(props: {

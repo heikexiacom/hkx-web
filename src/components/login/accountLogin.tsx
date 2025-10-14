@@ -1,11 +1,11 @@
 import { Button, Checkbox, Form, Input, message } from "antd";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { nanoid } from "nanoid";
+import React, { useCallback, useRef } from "react";
 import { userLogin } from "@/api/login";
 import { Session, LocalStorage } from "@/utils/storage";
 import { getMember } from "@/api/member";
 import Verify from "../verify";
 import type { VerifyRef } from "../verify";
+import { useUuid } from "@/utils/hooks/useUuid";
 
 type FieldType = {
   username: string;
@@ -18,7 +18,8 @@ export default function AccountLogin(props: {
   onLoginSuccess?: () => void;
 }) {
   const [form] = Form.useForm();
-  const [uuid, setUuid] = useState(nanoid());
+
+  const { uuid, reset: resetUUID } = useUuid();
   const verify = Form.useWatch("verify", form);
   const verifyRef = useRef<VerifyRef>(null);
 
@@ -54,14 +55,10 @@ export default function AccountLogin(props: {
       message.success("登录成功");
       props.onLoginSuccess?.();
     } catch (error) {
-      setUuid(nanoid());
+      resetUUID();
       form.setFieldsValue({ verify: false });
     }
   }, [uuid, form, verifyRef]);
-
-  useEffect(() => {
-    LocalStorage.set("uuid", uuid);
-  }, [uuid]);
 
   form.submit = submit;
   return (
@@ -93,7 +90,7 @@ export default function AccountLogin(props: {
           },
         ]}
       >
-        <Input.Password placeholder="密码" />
+        <Input.Password placeholder="密码" autoComplete="" />
       </Form.Item>
       <div className="flex flex-row justify-between">
         <Form.Item<FieldType>

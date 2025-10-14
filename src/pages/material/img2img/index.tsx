@@ -7,18 +7,19 @@ import {
   type Text2imgItem,
   type text2imgItemLastOutItem,
 } from "@/api/ai";
-import { base64ToBlob, blobToBase64, downloadUrlFile, gcd } from "@/utils";
-import { Copy, Delete, Loading, LoadingFour, Plus } from "@icon-park/react";
+import { downloadUrlFile, gcd } from "@/utils";
+import { Copy, Delete, LoadingFour, Plus, Text } from "@icon-park/react";
 import { useInfiniteScroll, useRequest, useThrottleEffect } from "ahooks";
 import { Button, Image, Input, Select, Slider, Upload } from "antd";
-import React, { useCallback, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useApp from "antd/es/app/useApp";
 import dayjs from "dayjs";
 
-import { imageOssProcess, uploadFileReturnUrl } from "@/utils/oss";
+import { imageOssProcess } from "@/utils/oss";
 import InfiniteSpinnerImg from "@/components/image/infiniteSpinner";
 import CollectCard from "@/components/card/collectCard";
 import calendar from "dayjs/plugin/calendar";
+import useLogin from "@/utils/hooks/useLogin";
 
 dayjs.extend(calendar);
 
@@ -210,11 +211,14 @@ function Img2ImgCard(props: {
 }
 
 export default function index() {
+  const { ready: login, reset: openModal } = useLogin();
+
   const [imageSrc, setImageSrc] = useState("");
   const [referenceIntensity, setReferenceIntensity] = useState(0.5);
   const [prompt, setPrompt] = useState("");
   const [wh, setWh] = useState<[number, number]>([1328, 1328]);
   const container = useRef<HTMLDivElement>(null);
+  const { modal, message } = useApp();
   const data = useInfiniteScroll(
     async (params) => {
       const { pageSize, pageNumber } = params ?? {
@@ -236,31 +240,42 @@ export default function index() {
     {
       target: container,
       direction: "bottom",
+      manual: true,
+
       isNoMore: (payload) => {
         if (!payload) {
-          return false;
+          return true;
         }
         return payload.list.length >= payload.total;
       },
     }
   );
-  const imagePrompt = useRequest(
-    async (file: File) => {
-      const data = await imageToImageFileUpload({ file });
-      if (data.toPrompt) {
-        return data;
-      } else {
-        const prompt = await imageToPrompt({ urlOrIdOrMd5: data.url });
-        return {
-          ...data,
-          toPrompt: prompt,
-        };
-      }
+
+  const imagePrompt = useRequest(imageToImageFileUpload, {
+    manual: true,
+    onBefore: () => {
+      message.loading({
+        content: "上传中",
+        key: "imagePrompt",
+        duration: 0,
+      });
     },
-    {
-      manual: true,
-    }
-  );
+    onFinally: () => {
+      message.destroy("imagePrompt");
+    },
+  });
+
+  const toPrompt = useRequest(imageToPrompt, {
+    manual: true,
+    onSuccess: (data) => {
+      message.success("转换成功");
+      setPrompt(data);
+    },
+
+    throttleWait: 1000,
+  });
+  const toPromptFile = toPrompt.params?.[0]?.urlOrIdOrMd5;
+
   const list = data.data?.list as
     | (Omit<Text2imgItem, "lastOut"> & {
         lastOut: text2imgItemLastOutItem[];
@@ -271,8 +286,6 @@ export default function index() {
     manual: true,
     onSuccess: data.reload,
   });
-
-  const { modal, message } = useApp();
 
   const del = (id: string) => {
     modal.confirm({
@@ -313,6 +326,10 @@ export default function index() {
   const showDay = Object.values(dayMap || {});
 
   const submit = async () => {
+    if (!login) {
+      openModal();
+      return;
+    }
     if (!imageSrc) {
       message.error("请上传参考图片");
       return;
@@ -330,40 +347,76 @@ export default function index() {
     });
   };
 
+  const imageUrl = imageSrc.startsWith("http")
+    ? imageSrc
+    : imagePrompt.data?.url;
+
+  useEffect(() => {
+    if (!login) {
+      openModal();
+    } else {
+      data.reload();
+    }
+  }, [login]);
+
   return (
     <div className="w-full h-full flex flex-row ">
       <div className="w-300px min-w-300px p-2 bg-[#fff] flex flex-col gap-1rem">
         <div className="w-full flex flex-col gap-0.5rem">
           <div>参考图片</div>
-          <Upload
-            className="cursor-pointer"
-            accept=".jpg,.png,.jpeg"
-            maxCount={1}
-            showUploadList={false}
-            beforeUpload={async (file) => {
-              const blob = new Blob([file], {
-                type: file.type,
-              });
-              imagePrompt.runAsync(file).then((e) => {
-                setPrompt(e.toPrompt);
-              });
-              const base64 = await blobToBase64(blob);
-              setImageSrc(base64);
-              return false;
-            }}
-          >
-            {imageSrc ? (
-              <img
-                className="w-100px h-100px object-contain bg-[#ECF0F1] p-2 rounded-lg border-1 border-[#999] border-solid"
-                src={imageSrc}
-              />
-            ) : (
-              <div className="flex flex-col w-100px h-100px bg-[#ECF0F1] p-2 rounded-lg border-1 border-[#999] border-solid flex items-center justify-center">
-                <Plus />
-                <div className="text-[#999] text-sm">上传图片</div>
-              </div>
-            )}
-          </Upload>
+          <div className="w-full flex flex-row gap-0.5rem">
+            <div>
+              <Upload
+                className="cursor-pointer"
+                accept=".jpg,.png,.jpeg"
+                maxCount={1}
+                showUploadList={false}
+                beforeUpload={async (file) => {
+                  const blob = new Blob([file], {
+                    type: file.type,
+                  });
+                  imagePrompt.runAsync({ file });
+                  setImageSrc(URL.createObjectURL(blob));
+                  return false;
+                }}
+              >
+                {imageSrc ? (
+                  <img
+                    className="w-100px h-100px object-contain bg-[#ECF0F1] p-2 rounded-lg border-1 border-[#999] border-solid"
+                    src={imageSrc}
+                  />
+                ) : (
+                  <div className="flex flex-col w-100px h-100px bg-[#ECF0F1] p-2 rounded-lg border-1 border-[#999] border-solid flex items-center justify-center">
+                    <Plus />
+                    <div className="text-[#999] text-sm">上传图片</div>
+                  </div>
+                )}
+              </Upload>
+            </div>
+            <div>
+              <Button
+                size="small"
+                type="primary"
+                icon={<Text />}
+                disabled={
+                  (!Boolean(imageSrc) && toPromptFile === imageUrl) ||
+                  imagePrompt.loading
+                }
+                loading={toPrompt.loading}
+                onClick={() => {
+                  if (!login) {
+                    openModal();
+                    return;
+                  }
+                  toPrompt.runAsync({
+                    urlOrIdOrMd5: imageUrl || "",
+                  });
+                }}
+              >
+                转描述词
+              </Button>
+            </div>
+          </div>
         </div>
         <div>
           <div>参考强度</div>
@@ -395,7 +448,6 @@ export default function index() {
           <div>
             <Input.TextArea
               rows={4}
-              allowClear
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               autoSize={{ minRows: 10, maxRows: 10 }}
@@ -439,7 +491,27 @@ export default function index() {
             />
           );
         })}
-        {/* {data.noMore && <Divider>没有更多了</Divider>} */}
+        {!list?.length && (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <div
+              className="flex flex-col items-center justify-center gap-2 bg-[#fff] p-2 rounded-lg cursor-pointer"
+              onClick={() =>
+                setImageSrc(
+                  "https://staticsh.zxdz.vip/0aee41b22b1a4d4a88f6b1f4feffcd58.png"
+                )
+              }
+            >
+              <img
+                className="max-w-200px max-h-200px rounded-lg"
+                src="https://staticsh.zxdz.vip/0aee41b22b1a4d4a88f6b1f4feffcd58.png"
+                alt=""
+              />
+              <div className="text-[#999] text-sm">茉莉花茶</div>
+            </div>
+
+            <div>导入图片, 生成类似AI图片</div>
+          </div>
+        )}
       </div>
     </div>
   );

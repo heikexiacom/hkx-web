@@ -1,6 +1,5 @@
 import { MaterialThree, NewPicture, Text } from "@icon-park/react";
 import { Layout } from "antd";
-import React from "react";
 import { NavLink } from "react-router";
 import { Outlet } from "react-router";
 

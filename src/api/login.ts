@@ -5,8 +5,11 @@ import { LocalStorage } from "@/utils/storage";
 export type verificationEnums =
   | "LOGIN"
   | "REGISTER"
-  | "FIND_USER"
-  | "CHANGE_PASSWORD";
+  | "FIND_USER" // 找回密码
+  | "BIND_USER"
+  | "UNBIND_USER"
+  | "UPDATE_PASSWORD" // 更新密码
+  | "WALLET_PASSWORD"; // 钱包密码
 
 export type verificationData = {
   backImage: string;
@@ -52,7 +55,7 @@ export const getSmsCode = (
       verificationEnums: verificationEnums;
     },
     void
-  >(`/common/common/sms/LOGIN/${mobile}`, {
+  >(`/common/common/sms/${verification}/${mobile}`, {
     headers: {
       uuid: LocalStorage.get("uuid") || "",
     },
@@ -127,3 +130,65 @@ export const webLoginCallback = get<
     refreshToken: string;
   }
 >("/buyer/passport/connect/connect/result");
+
+export function register(data: {
+  username?: string;
+  password: string;
+  mobilePhone: string;
+  code: string;
+  parentId?: string;
+}) {
+  return post<
+    {
+      username?: string;
+      password: string;
+      mobilePhone: string;
+      code: string;
+      parentId?: string;
+    },
+    {
+      accessToken: string;
+      refreshToken: string;
+    }
+  >("/buyer/passport/member/register", {
+    convertRequest: (data) => {
+      return {
+        ...data,
+        password: hexMD5(data.password),
+      };
+    },
+    formData: true,
+    headers: {
+      uuid: LocalStorage.get("uuid") || "",
+    },
+  })(data);
+}
+
+export function resetPassword(data: {
+  mobile: string;
+  code: string;
+  password: string;
+}) {
+  return post<
+    {
+      mobile: string;
+      code: string;
+      password: string;
+    },
+    {
+      accessToken: string;
+      refreshToken: string;
+    }
+  >("/buyer/passport/member/resetByMobile", {
+    convertRequest: (data) => {
+      return {
+        ...data,
+        password: hexMD5(data.password),
+      };
+    },
+    formData: true,
+    headers: {
+      uuid: LocalStorage.get("uuid") || "",
+    },
+  })(data);
+}

@@ -1,9 +1,8 @@
-import React from "react";
 import Login from "../login";
 import { NavLink, useLocation } from "react-router";
 import Tabs from "../tabs";
 
-export default function index(props: { children?: React.ReactNode }) {
+export default function index() {
   const route = [
     {
       path: "/home",

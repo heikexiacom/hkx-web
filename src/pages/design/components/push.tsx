@@ -3,7 +3,7 @@ import { withMinDelay } from "@/utils";
 import { useRequest } from "ahooks";
 import { Input, Modal } from "antd";
 import useApp from "antd/es/app/useApp";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 export default function usePushModal() {
   const [visible, setVisible] = useState(false);

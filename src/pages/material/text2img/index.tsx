@@ -1,12 +1,13 @@
 import {
   delText2img,
+  designStyleList,
   getText2imgList,
   jmText2img,
   type Text2imgItem,
   type text2imgItemLastOutItem,
 } from "@/api/ai";
 import InfiniteSpinnerImg from "@/components/image/infiniteSpinner";
-import { downloadUrlFile, gcd } from "@/utils";
+import { downloadUrlFile, gcd, getStyleFromPrompt } from "@/utils";
 import { Copy, Delete } from "@icon-park/react";
 
 import { useInfiniteScroll, useRequest, useThrottleEffect } from "ahooks";
@@ -14,9 +15,10 @@ import { Button, Input, Select } from "antd";
 import useApp from "antd/es/app/useApp";
 import dayjs from "dayjs";
 import "./index.scss";
-import React, { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CollectCard from "@/components/card/collectCard";
 import calendar from "dayjs/plugin/calendar";
+import useLogin from "@/utils/hooks/useLogin";
 dayjs.extend(calendar);
 
 type px = {
@@ -191,8 +193,12 @@ function Text2ImgCard(props: {
 
 export default function index() {
   const [prompt, setPrompt] = useState("");
+  const { ready: login, reset: openModal } = useLogin();
   const [wh, setWh] = useState<[number, number]>([1328, 1328]);
   const container = useRef<HTMLDivElement>(null);
+
+  const styles = useRequest(designStyleList);
+
   const data = useInfiniteScroll(
     async (params) => {
       const { pageSize, pageNumber } = params ?? {
@@ -212,11 +218,12 @@ export default function index() {
       };
     },
     {
+      manual: true,
       target: container,
       direction: "bottom",
       isNoMore: (payload) => {
         if (!payload) {
-          return false;
+          return true;
         }
         return payload.list.length >= payload.total;
       },
@@ -232,6 +239,9 @@ export default function index() {
   const submit = useRequest(jmText2img, {
     manual: true,
     onSuccess: data.reload,
+    onError: (e) => {
+      message.error(e.message);
+    },
   });
 
   const { modal, message } = useApp();
@@ -263,6 +273,14 @@ export default function index() {
     }
   );
 
+  useEffect(() => {
+    if (login) {
+      data.reload();
+    } else {
+      openModal();
+    }
+  }, [login]);
+
   const dayMap = list?.reduce((prev, cur) => {
     const day = dayjs(cur.createTime).format("YYYY-MM-DD");
     if (prev[day]) {
@@ -277,10 +295,52 @@ export default function index() {
     <div className="flex flex-row w-full h-full">
       <div className="w-300px min-w-300px p-2 bg-[#fff] flex flex-col gap-1rem">
         <div className="flex flex-col gap-1rem">
+          <div>设计风格</div>
+          <div className="grid grid-cols-3 gap-1rem">
+            {styles.data?.map((e, _, arr) => {
+              const isActive = prompt.includes(e.name);
+
+              return (
+                <div
+                  key={e.id}
+                  className={`flex flex-col items-center cursor-pointer relative rounded-md ${
+                    isActive
+                      ? "border-2 border-[#1677ff]"
+                      : "border-2 border-[#fff]"
+                  }`}
+                  onClick={() => {
+                    if (isActive) {
+                      return;
+                    }
+                    const s = arr.find((e) => prompt.includes(e.name));
+                    if (s) {
+                      setPrompt(prompt.replace(s.name, e.name));
+                    } else {
+                      const style = getStyleFromPrompt(prompt);
+                      if (style) {
+                        setPrompt(prompt.replace(style, e.name));
+                      } else {
+                        setPrompt(
+                          (pre) => pre + (pre ? "\n" : "") + `风格:${e.name}`
+                        );
+                      }
+                    }
+                  }}
+                >
+                  <img src={e.image} className="w-full h-full " />
+                  <div className="text-sm text-center absolute bottom-0 left-0 right-0 bg-[#00000080] text-[#fff]">
+                    {e.name}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1rem">
           <div>描述词</div>
           <Input.TextArea
             rows={4}
-            allowClear
             placeholder="请输入画面描述"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -312,6 +372,10 @@ export default function index() {
               if (!prompt) {
                 return;
               }
+              if (!login) {
+                openModal();
+                return;
+              }
               submit.run({
                 prompt,
                 height: wh[1],
@@ -339,6 +403,35 @@ export default function index() {
             />
           );
         })}
+
+        {!list?.length && (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="bg-[#fff] p-2 rounded-md">
+              <div className="flex flex-row items-center justify-between cursor-default">
+                <div>试试生成这么一个包装设计</div>
+                <Button
+                  type="primary"
+                  size="small"
+                  onClick={() => {
+                    setPrompt(
+                      "一个简约的包装设计，产品为矿泉水，品牌名为WATER，包装样式为塑料瓶，设计风格为极简几何风，设计元素为抽象山峰轮廓、渐变水流纹、哑光磨砂质感，主题配色为冰川蓝渐变至墨黑"
+                    );
+                  }}
+                >
+                  使用
+                </Button>
+              </div>
+              <div className="cursor-default">
+                <p> - **产品**：矿泉水 </p>
+                <p>- **品牌名**：WATER -</p>
+                <p>- **包装样式**：塑料瓶 -</p>
+                <p>- **设计风格**：极简几何风 -</p>
+                <p>- **设计元素**：抽象山峰轮廓、渐变水流纹、哑光磨砂质感 -</p>
+                <p>- **主题配色**：冰川蓝渐变至墨黑 -</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

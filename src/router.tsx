@@ -63,7 +63,6 @@ const router = createBrowserRouter([
       {
         path: "material",
         element: <MaterialPage />,
-
         children: [
           {
             index: true,
@@ -87,11 +86,11 @@ const router = createBrowserRouter([
         path: "inspiration",
         element: <InspirationPage />,
       },
-      {
-        path: "*",
-        element: <Navigate to="/home" replace />,
-      },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/home" replace />,
   },
 ]);
 

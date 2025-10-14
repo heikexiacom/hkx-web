@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, type ReactNode } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 
 export interface TabOption {
   title: string | ReactNode;

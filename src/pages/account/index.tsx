@@ -1,6 +1,6 @@
 import { mobileBindThird, updateMember, type UserInfo } from "@/api/member";
 import Edit from "@/components/modal/edit";
-import { blobToBase64, hiddenPhone } from "@/utils";
+import { hiddenPhone } from "@/utils";
 import { uploadFileReturnUrl } from "@/utils/oss";
 import { LocalStorage } from "@/utils/storage";
 import { Avatar, Button, Upload } from "antd";

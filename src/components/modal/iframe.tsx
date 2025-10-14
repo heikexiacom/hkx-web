@@ -1,12 +1,6 @@
-import { useDebounceEffect, useMap, useSet } from "ahooks";
+import { useDebounceEffect, useSet } from "ahooks";
 import { Modal, type ModalProps } from "antd";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export default function IframeModal<T>(props: {
   url?: string;

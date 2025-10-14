@@ -12,6 +12,7 @@ import { useControllableValue, useRequest } from "ahooks";
 import { ArrowRight } from "@icon-park/react";
 import "./index.scss";
 import Loading from "../loading/loading";
+import type { TooltipPlacement } from "antd/es/tooltip";
 
 function Verify(props: {
   data?: verificationData;
@@ -129,10 +130,11 @@ type VerifyProps = {
   id?: string;
   onChange?: (v: boolean) => void;
   onOpen?: () => void;
+  placement?: TooltipPlacement;
 };
 const Index = React.forwardRef<VerifyRef, VerifyProps>(
   (props: VerifyProps, ref) => {
-    const { verification } = props;
+    const { verification, placement = "top" } = props;
     const [open, setOpen] = useState(false);
     const verifyData = useRequest(getVerifyImg, {
       manual: true,
@@ -183,6 +185,7 @@ const Index = React.forwardRef<VerifyRef, VerifyProps>(
               setOpen(false);
             }
           }}
+          placement={placement}
           arrow={false}
           title="请拖动滑块完成拼图"
           content={

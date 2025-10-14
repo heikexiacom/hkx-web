@@ -249,6 +249,19 @@ export const conversationList = get<
   Records<ConversationItem>
 >("/buyer/aiart/agent/conversationList");
 
+export type content_object =
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: "image";
+      file_id: string;
+      file_url: string;
+      size: number;
+      name: string;
+    };
+
 export type chatItem = {
   audio: string;
   role: "user" | "assistant";
@@ -319,6 +332,7 @@ export const chatFileUpload = post<
     bytes: number;
     created_at: number;
     file_name: string;
+    url: string;
   }
 >("/buyer/aiart/agent/chatFileUpload", {
   formData: true,
@@ -350,6 +364,7 @@ export type chatSteamObject =
 
 export type eventType =
   | "chatid"
+  | "chatInfo"
   | "think"
   | "answer"
   | "verbose"
@@ -363,3 +378,50 @@ export type msgEvent = {
 
 export const cozeChatApi =
   import.meta.env.VITE_APP_API_BASE_URL + "/buyer/aiart/agent/converseChat";
+
+export const cancelChat = post<
+  {
+    chatId: string;
+    conversationId: string;
+  },
+  {
+    logID: string;
+    chat: {
+      id: string;
+      conversation_id: string;
+      bot_id: string;
+      created_at: number;
+      completed_at: number;
+      failed_at: string;
+      meta_data: string;
+      last_error: string;
+      status: string;
+      required_action: string;
+      usage: string;
+    };
+  }
+>("/buyer/aiart/agent/cancelChat");
+
+export const designStyleList = get<
+  void,
+  Array<{
+    id: string;
+    name: string;
+    image: string;
+    remark: string;
+  }>
+>("/buyer/aiart/design/tool/style/list", {
+  cache: true,
+});
+
+export type toolIdEnum = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
+
+export const imageTool = post<
+  {
+    imgUrlOrIdOrMd5: string;
+    prompt: string;
+    sessionId: string;
+    toolId: toolIdEnum;
+  },
+  string
+>("/buyer/aiart/design/tool/imageBox");

@@ -1,20 +1,14 @@
-import {
-  getModelList,
-  getModelTag,
-  type ModelDetail,
-  type modelTag,
-} from "@/api/model";
+import { getModelList, getModelTag, type ModelDetail } from "@/api/model";
 import ImageCard from "@/components/card/imageCard";
 import IframeModal from "@/components/modal/iframe";
 import { imageOssProcess } from "@/utils/oss";
 import { LocalStorage } from "@/utils/storage";
 import { usePagination, useRequest } from "ahooks";
 import { Input, Layout, Menu, Pagination } from "antd";
-import { isLogin, openLoginModal } from "@/store";
 
 import React from "react";
-import { useAtomValue, useSetAtom } from "jotai";
 import { openDesign } from "@/utils/open";
+import useLogin from "@/utils/hooks/useLogin";
 
 function ModelCard(props: {
   data: ModelDetail;
@@ -34,25 +28,8 @@ function ModelCard(props: {
   );
 }
 
-function ModelTag(props: {
-  data: modelTag;
-  onClick: (data: modelTag) => void;
-}) {
-  const { data, onClick } = props;
-
-  return (
-    <div
-      className="text-[#222] text-xl font-bold cursor-pointer"
-      onClick={() => onClick?.(data)}
-    >
-      {data.labelName}
-    </div>
-  );
-}
-
 const ModelPage: React.FC = React.memo(() => {
-  const login = useAtomValue(isLogin);
-  const openLogin = useSetAtom(openLoginModal);
+  const { ready: login, reset: openLogin } = useLogin();
 
   const tags = useRequest(getModelTag);
 
@@ -105,7 +82,7 @@ const ModelPage: React.FC = React.memo(() => {
 
   const openModal = (data: ModelDetail) => {
     if (!login) {
-      openLogin(true);
+      openLogin();
       return;
     }
     open(data);
@@ -148,6 +125,7 @@ const ModelPage: React.FC = React.memo(() => {
           <Menu
             mode="inline"
             items={menu}
+            defaultSelectedKeys={[search?.labelId || ""]}
             onClick={({ key }) => {
               data.run(
                 {

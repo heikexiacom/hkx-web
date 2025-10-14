@@ -5,14 +5,17 @@ import {
   type mtlType,
 } from "@/api/material";
 import ImageCard from "@/components/card/imageCard";
+import useLogin from "@/utils/hooks/useLogin";
 import { imageOssProcess } from "@/utils/oss";
 import { Delete } from "@icon-park/react";
 import { usePagination } from "ahooks";
-import { Button, Input, Radio, Select } from "antd";
+import { Button, Radio, Select } from "antd";
 import useApp from "antd/es/app/useApp";
-import React from "react";
+import { useEffect } from "react";
 
 export default function index() {
+  const { ready: login, reset: openModal } = useLogin();
+
   const data = usePagination(
     async (
       { current, pageSize },
@@ -36,6 +39,7 @@ export default function index() {
     {
       defaultPageSize: 15,
       throttleWait: 500,
+      manual: true,
     }
   );
   const [_, searchParams] = data.params;
@@ -59,6 +63,23 @@ export default function index() {
     });
   };
 
+  useEffect(() => {
+    if (!login) {
+      openModal();
+    } else {
+      data.run(
+        {
+          current: 1,
+          pageSize: 15,
+        },
+        {
+          type: searchType,
+          name: searchName,
+        }
+      );
+    }
+  }, [login]);
+
   return (
     <div className="w-full h-full">
       <div className="flex justify-between items-center p-2 bg-white">
@@ -78,6 +99,10 @@ export default function index() {
             ]}
             defaultValue="GENERAL_PIC"
             onChange={(e) => {
+              if (!login) {
+                openModal();
+                return;
+              }
               console.log(e.target.value);
               if (e.target.value !== searchType) {
                 data.run(
@@ -120,6 +145,10 @@ export default function index() {
               ]}
               defaultValue=""
               onChange={(e) => {
+                if (!login) {
+                  openModal();
+                  return;
+                }
                 if (e !== searchType) {
                   data.run(
                     {
@@ -178,6 +207,9 @@ export default function index() {
             />
           );
         })}
+        {!data.data?.list?.length && (
+          <div className="text-center text-[#999]">暂无图片</div>
+        )}
       </div>
     </div>
   );

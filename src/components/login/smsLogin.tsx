@@ -1,12 +1,12 @@
 import { Button, Checkbox, Form, Input, message } from "antd";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { nanoid } from "nanoid";
 import { smsLogin, getSmsCode } from "@/api/login";
 import { Session, LocalStorage } from "@/utils/storage";
 import { useCountDown } from "ahooks";
 import { getMember } from "@/api/member";
 import Verify from "../verify";
 import type { VerifyRef } from "../verify";
+import { useUuid } from "@/utils/hooks/useUuid";
 
 type FieldType = {
   mobile: string;
@@ -20,7 +20,8 @@ export default function CodeLogin(props: {
   onLoginSuccess?: () => void;
 }) {
   const [form] = Form.useForm();
-  const [uuid, setUuid] = useState(nanoid());
+  const { uuid, reset: resetUUID } = useUuid();
+
   const verify = Form.useWatch("verify", form);
   const sendStatus = Form.useWatch("sendStatus", form);
 
@@ -69,7 +70,7 @@ export default function CodeLogin(props: {
       message.success("登录成功");
       props.onLoginSuccess?.();
     } catch (error) {
-      setUuid(nanoid());
+      resetUUID();
       form.setFieldsValue({ verify: false });
     }
   }, [uuid, form, verifyRef]);
@@ -77,7 +78,7 @@ export default function CodeLogin(props: {
   const openVerify = useCallback(async () => {
     try {
       await form.validateFields(["mobile"]);
-      setUuid(nanoid());
+      resetUUID();
     } catch (error) {
       return;
     }

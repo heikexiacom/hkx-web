@@ -1,7 +1,7 @@
 import { updateMemberPassword } from "@/api/member";
 import { Form, Input, Modal } from "antd";
 import useApp from "antd/es/app/useApp";
-import react, { useState } from "react";
+import { useState } from "react";
 
 export default function ModifyPassword() {
   const [visible, setVisible] = useState(false);

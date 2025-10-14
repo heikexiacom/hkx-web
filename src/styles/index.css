@@ -4,7 +4,7 @@
 @import './normalize.css';
 
 /* Import Theme Variables and Styles */
-@import './theme.css';
+/* @import './theme.css'; */
 
 /* App Specific Styles */
 #root {

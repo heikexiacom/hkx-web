@@ -1,5 +1,5 @@
 import { collectImg, type text2imgItemLastOutItem } from "@/api/ai";
-import React, { useState } from "react";
+import { useState } from "react";
 import ImageCard from "../imageCard";
 import { Like } from "@icon-park/react";
 import { Button, Space, Image } from "antd";

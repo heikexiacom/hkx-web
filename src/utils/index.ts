@@ -145,8 +145,22 @@ export function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-export function base64ToBlob(base64: string): Promise<Blob> {
+export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      if (reader.result) {
+        resolve(reader.result.toString());
+      } else {
+        reject(new Error("转换失败"));
+      }
+    };
+  });
+}
+
+export function base64ToBlob(base64: string): Promise<Blob> {
+  return new Promise((resolve) => {
     const [, data] = base64.split(",");
     const byteCharacters = atob(data);
     const byteNumbers = new Array(byteCharacters.length);
@@ -203,4 +217,26 @@ export function getMapName(url?: string) {
   const u = new URL(url);
   const parts = u.pathname.split(/[\/-]/g);
   return parts[parts.length - 3] || "";
+}
+
+const styleReg = /风格.*?[,\.\n，。 ]/;
+const styledReg = /^[为是]/;
+/**
+ * 从提示中提取风格
+ * @param prompt 提示文本
+ * @returns 提取到的风格，或 undefined 如果未找到
+ */
+export function getStyleFromPrompt(prompt: string) {
+  if (prompt.includes("风格")) {
+    let style = prompt.match(styleReg)?.[0];
+    if (style) {
+      style = style.replace(/^风格/, "").trim();
+      style = style.replace(/[\p{P}\p{S}]/gu, "");
+      if (style.match(styledReg)) {
+        style = style.replace(styledReg, "").trim();
+      }
+      return style;
+    }
+  }
+  return undefined;
 }

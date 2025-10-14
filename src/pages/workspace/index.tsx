@@ -9,7 +9,6 @@ import {
 } from "@icon-park/react";
 import { Avatar, Layout, Space } from "antd";
 import useApp from "antd/es/app/useApp";
-import React from "react";
 import { NavLink, Outlet } from "react-router";
 
 export default function index() {

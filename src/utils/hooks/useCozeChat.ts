@@ -1,4 +1,4 @@
-import { cozeChatApi, type chatSteamObject } from "@/api/ai";
+import { cozeChatApi, cancelChat, type chatSteamObject } from "@/api/ai";
 import { useRef, useState } from "react";
 import {
   fetchEventSource,
@@ -12,7 +12,13 @@ export function useCozeChat() {
   const [suggestion, setSuggestion] = useState<string[]>([]);
   const [chatid, setChatid] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [chatInfo, setChatInfo] = useState<{
+    ID: string;
+    bot_id: string;
+    conversation_id: string;
+    id: string;
+    status: string;
+  }>();
   const ctrlRef = useRef<AbortController | null>(null);
   const cleanup = () => {
     if (ctrlRef.current) {
@@ -21,11 +27,12 @@ export function useCozeChat() {
     }
   };
 
-  const resetValues = () => {
+  const reset = () => {
     setThink("");
     setAnswer("");
     setSuggestion([]);
     setChatid("");
+    setChatInfo(undefined);
   };
 
   const run = async (data: {
@@ -34,7 +41,7 @@ export function useCozeChat() {
     fileIdOrUrl?: string;
   }) => {
     try {
-      resetValues();
+      reset();
       // 先清理之前的连接
       cleanup();
 
@@ -61,6 +68,17 @@ export function useCozeChat() {
           if (event.event === "think") {
             if (d.type === "text") setThink((prev) => prev + d.content);
           }
+          if (event.event === "chatInfo" && d.type === "text") {
+            setChatInfo(
+              d.content as unknown as {
+                ID: string;
+                bot_id: string;
+                conversation_id: string;
+                id: string;
+                status: string;
+              }
+            );
+          }
           if (event.event === "answer") {
             if (d.type === "text") setAnswer(d.content);
           }
@@ -86,9 +104,22 @@ export function useCozeChat() {
     }
   };
 
-  const cancel = () => {
-    cleanup();
-    setLoading(false);
+  const cancel = async () => {
+    if (loading) {
+      if (chatInfo) {
+        try {
+          cancelChat({
+            chatId: chatInfo?.id || "",
+            conversationId: chatInfo?.conversation_id || "",
+          });
+        } catch (error) {}
+      }
+      const t = think ? think + "\n---\n用户取消了请求" : "用户取消了请求";
+      setThink(t);
+      setAnswer(t);
+      cleanup();
+      setLoading(false);
+    }
   };
 
   return {
@@ -97,10 +128,11 @@ export function useCozeChat() {
       think,
       answer,
       suggestion,
+      chatInfo,
     },
     loading,
     run,
     cancel,
-    resetValues,
+    reset,
   };
 }

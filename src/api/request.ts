@@ -130,7 +130,7 @@ async function refresh(originalRequest: InternalAxiosRequestConfig) {
       const { accessToken, refreshToken } = await refreshAccessToken();
       LocalStorage.set("accessToken", accessToken);
       LocalStorage.set("refreshToken", refreshToken);
-
+      console.log("刷新token成功", requests);
       // 重试队列中的请求
       requests.forEach((cb) => cb(accessToken));
       requests = [];
@@ -139,7 +139,7 @@ async function refresh(originalRequest: InternalAxiosRequestConfig) {
       // 刷新失败跳转登录
       LocalStorage.remove("accessToken");
       LocalStorage.remove("refreshToken");
-
+      console.log("刷新token失败", refreshError);
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
@@ -191,7 +191,7 @@ http.interceptors.response.use(
       originalRequest &&
       originalRequest?.headers?.allowFail !== "true" &&
       status === 403 &&
-      originalRequest?.url !== "/labelpro/user/refresh"
+      originalRequest?.url !== "/buyer/passport/member/refresh"
     ) {
       return refresh(originalRequest);
     }
