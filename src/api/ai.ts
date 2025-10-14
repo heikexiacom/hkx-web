@@ -214,7 +214,7 @@ export const conversationClear = post<
  */
 export const conversationRemove = post<
   {
-    id: string; //ConversationItem.id
+    sessionId: string; //ConversationItem.sessionId
   },
   boolean
 >("/buyer/aiart/agent/conversationRemove");

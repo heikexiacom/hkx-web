@@ -807,7 +807,7 @@ export default function index() {
       okType: "danger",
       onOk: async () => {
         const res = await conversationRemove({
-          id: data.id,
+          sessionId: data.sessionId,
         });
         if (res) {
           message.open({
