@@ -139,7 +139,7 @@ const renderMarkdownTyping = (content: string) => {
               return (
                 <div className="py-2">
                   <div className="rounded-lg bg-gray-200 overflow-hidden h-200px w-200px flex items-center justify-center">
-                    <span>渲染中</span>
+                    <span>加载中</span>
                   </div>
                 </div>
               );
@@ -418,14 +418,16 @@ function Chat(props: {
 
   return (
     <div className="w-full h-full relative bg-[#fff] chat-container">
-      <FloatButton
-        tooltip="打印数据"
-        onClick={() => {
-          console.log("items-->", items);
-          console.log("cozeChat-->", cozeChat);
-          console.log("typing-->", typing);
-        }}
-      ></FloatButton>
+      {import.meta.env.MODE === "dev" && (
+        <FloatButton
+          tooltip="打印数据"
+          onClick={() => {
+            console.log("items-->", items);
+            console.log("cozeChat-->", cozeChat);
+            console.log("typing-->", typing);
+          }}
+        ></FloatButton>
+      )}
       <div className="flex flex-col h-full relative">
         <InfiniteScroll
           // ref={infScrollRef}

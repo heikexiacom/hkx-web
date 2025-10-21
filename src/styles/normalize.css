@@ -25,6 +25,10 @@ body {
   font-family: -apple-system,PingFang SC,Inter,system-ui,Avenir,Helvetica,Arial,sans-serif;
 }
 
+code{
+  font-family: -apple-system,PingFang SC,Inter,system-ui,Avenir,Helvetica,Arial,sans-serif  !important
+}
+
 /**
  * Render the `main` element consistently in IE.
  */
