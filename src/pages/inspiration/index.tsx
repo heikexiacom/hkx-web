@@ -799,15 +799,15 @@ export default function index() {
   const [conversationId, setCurrentConversationId] = useState("");
   const { message, modal } = useApp();
 
-  const deleteConversation = async (data: ConversationItem) => {
-    const { showName } = data;
+  const deleteConversation = async (d: ConversationItem) => {
+    const { showName } = d;
     modal.confirm({
       title: `确认删除对话${showName}吗？`,
       okText: "确认",
       okType: "danger",
       onOk: async () => {
         const res = await conversationRemove({
-          sessionId: data.sessionId,
+          sessionId: d.sessionId,
         });
         if (res) {
           message.open({
@@ -816,6 +816,7 @@ export default function index() {
             key: "deleteConversation",
             duration: 3,
           });
+          data.reload();
         } else {
           message.open({
             type: "error",

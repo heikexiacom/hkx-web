@@ -6,9 +6,10 @@
   "packageManager": "pnpm@9.12.2",
   "scripts": {
     "dev": "vite --mode dev --port 8047 --host",
-    "build": "tsc -b && vite build --mode prod",
+    "build": "tsc -b && vite build --mode prod && npm run zip",
     "lint": "eslint .",
-    "preview": "vite preview --mode prod"
+    "preview": "vite preview --mode prod",
+    "zip": "rimraf dist.zip && bestzip dist.zip dist/"
   },
   "dependencies": {
     "@ahooksjs/use-url-state": "^3.5.1",
@@ -45,10 +46,12 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react-swc": "^4.0.0",
+    "bestzip": "^2.2.1",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "rimraf": "^6.0.1",
     "sass": "^1.92.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",

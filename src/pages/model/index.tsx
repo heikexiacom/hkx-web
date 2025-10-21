@@ -98,24 +98,45 @@ const ModelPage: React.FC = React.memo(() => {
     if (e.children) {
       return {
         key: e.key,
-        label: e.labelName,
-        children: e.children.map((e) => {
+        label: <div>{e.labelName}</div>,
+        children: e.children.map((c) => {
           return {
-            key: e.key,
-            label: e.labelName,
+            key: c.key,
+            label: (
+              <div>
+                {c.labelName}
+                <span className="text-[#999] font-size-0.8rem m-l-2 cursor-default">
+                  {c.modelTotal || 0}
+                </span>
+              </div>
+            ),
           };
         }),
       };
     } else {
       return {
         key: e.key,
-        label: e.labelName,
+        label: (
+          <div>
+            {e.labelName}
+            <span className="text-[#999] font-size-0.8rem m-l-2 cursor-default">
+              {e.modelTotal || 0}
+            </span>
+          </div>
+        ),
       };
     }
   });
   menu?.unshift({
     key: "",
-    label: "全部",
+    label: (
+      <div>
+        全部
+        <span className="text-[#999] font-size-0.8rem m-l-2 cursor-default">
+          {tags.data?.reduce((pre, cur) => pre + (cur.modelTotal || 0), 0) || 0}
+        </span>
+      </div>
+    ),
   });
 
   return (
@@ -141,9 +162,9 @@ const ModelPage: React.FC = React.memo(() => {
           />
         </div>
       </Layout.Sider>
-      <Layout.Content>
+      <Layout.Content className="bg-[#fff]">
         {IframeNode}
-        <div className="bg-[#fff] px-2 py-2 flex flex-row items-center justify-between">
+        <div className="bg-[#fff] px-2  py-2 flex flex-row items-center justify-between">
           <div className="text-[#222] text-xl font-bold">模型</div>
           <div>
             <Input.Search
@@ -170,7 +191,7 @@ const ModelPage: React.FC = React.memo(() => {
             />
           </div>
         </div>
-        <div className="flex flex-row flex-wrap justify-start px-2 py-2">
+        <div className="bg-[#f5f5f5] flex flex-row flex-wrap justify-start px-2 py-2">
           {data.data?.list.map((item) => {
             return <ModelCard key={item.id} data={item} onClick={openModal} />;
           })}

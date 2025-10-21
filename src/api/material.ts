@@ -47,7 +47,7 @@ export const materialAdd = post<
     viewSort: number;
   },
   void
->("/buyer/material/add");
+>("buyer/material/add");
 
 export const materialDelByIds = post<
   {
