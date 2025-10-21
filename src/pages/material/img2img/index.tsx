@@ -17,6 +17,8 @@ import dayjs from "dayjs";
 
 import { imageOssProcess } from "@/utils/oss";
 import InfiniteSpinnerImg from "@/components/image/infiniteSpinner";
+import ErrorImage from "@/components/image/error";
+
 import CollectCard from "@/components/card/collectCard";
 import calendar from "dayjs/plugin/calendar";
 import useLogin from "@/utils/hooks/useLogin";
@@ -184,27 +186,38 @@ function Img2ImgCard(props: {
         </div>
       </div>
       <div className="p-t-2">
-        {data.lastOut.length
-          ? data.lastOut.map((e) => {
-              return (
-                <CollectCard
-                  key={e.imageId}
-                  data={e}
-                  width={w}
-                  height={h}
-                  download={download}
-                />
-              );
-            })
-          : Array.from({ length: data.imageNum }).map((_, index) => (
-              <div key={data.id + "-temp-" + index}>
-                <InfiniteSpinnerImg
-                  width={w}
-                  height={h}
-                  className="rounded-md bg-white border border-[#e5e5e5]"
-                />
-              </div>
-            ))}
+        {data.picStatus === "ERROR" ? (
+          <ErrorImage
+            width={w}
+            height={h}
+            text="生成失败"
+            className="rounded-md bg-white border border-[#e5e5e5]"
+          />
+        ) : (
+          <>
+            {data.lastOut.length
+              ? data.lastOut.map((e) => {
+                  return (
+                    <CollectCard
+                      key={e.imageId}
+                      data={e}
+                      width={w}
+                      height={h}
+                      download={download}
+                    />
+                  );
+                })
+              : Array.from({ length: data.imageNum }).map((_, index) => (
+                  <div key={data.id + "-temp-" + index}>
+                    <InfiniteSpinnerImg
+                      width={w}
+                      height={h}
+                      className="rounded-md bg-white border border-[#e5e5e5]"
+                    />
+                  </div>
+                ))}
+          </>
+        )}
       </div>
     </div>
   );

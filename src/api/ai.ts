@@ -60,7 +60,7 @@ export type Text2imgItem = {
   inputJson: string;
   createSource: string;
   timeCost: string;
-  picStatus: "HANDLE" | "SUCCESS";
+  picStatus: "HANDLE" | "SUCCESS" | "ERROR";
   remark: string;
   keepDays: number;
   taskId: string;
