@@ -274,7 +274,10 @@ function Chat(props: {
   useEffect(() => {
     if (defaultItems) {
       setItems(defaultItems.map(chatItemToMD));
+      cozeChat.cancel();
       cozeChat.reset();
+
+      setTyping(false);
     }
     setTimeout(() => {
       scrollToBottom();
