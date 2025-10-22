@@ -93,6 +93,9 @@ const renderMarkdown = (content: string) => {
             h2: ({ node, ...props }) => {
               return <strong {...props} />;
             },
+            a: ({ node, ...props }) => {
+              return <a {...props} target="_blank" />;
+            },
             img: ({ node, ...props }) => {
               const isUrl = isImageUrl(props.src || "");
               if (!isUrl) {
@@ -128,6 +131,9 @@ const renderMarkdownTyping = (content: string) => {
           components={{
             p: ({ node, ...props }) => {
               return <div {...props} />;
+            },
+            a: ({ node, ...props }) => {
+              return <a {...props} target="_blank" />;
             },
             h1: ({ node, ...props }) => {
               return <strong {...props} />;
